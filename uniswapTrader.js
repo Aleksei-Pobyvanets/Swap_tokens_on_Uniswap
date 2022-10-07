@@ -24,5 +24,17 @@ const decimals1 = 18
 const address1 = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
 
 async function main() {
-    
+    const poolContract = new ethers.Contract(
+        poolAddress,
+        IUniswapV3PoolABI,
+        provider
+    )
+
+    const immutables = await getPoolImmutables(poolContract)
+    const state = await getPoolState(poolContract)
+
+    const waalet = new 
+
 }
+
+
