@@ -33,8 +33,54 @@ async function main() {
     const immutables = await getPoolImmutables(poolContract)
     const state = await getPoolState(poolContract)
 
-    const waalet = new 
+    const wallet = new ethers.Wallet(WALLET_SECRET)
+    const connectedWallet = wallet.connect(provider)
+
+    const swapRouterContract = new ethers.Contract(
+        swapRouterAddress,
+        SwapRouterABI,
+        provider
+    )
+
+    const inputAmount = 0.001 // fixed value for test run, IN MAIN NO DO NOT RUN
+    // 0.001 => 1 000 000 000 000 000
+    const amountIn = ethers.utils.parseUnits(
+        inputAmount.toString(),
+        decimals0
+    )
+    
+    const approvalAmount = (amountIn * 100000).toString()
+    const tokenContract0 = new ethers.Contract(
+        address0,
+        ERC20ABI,
+        provider
+    )
+    const approvalResponse = await tokenContract0.connect(connectedWallet).approve(
+        swapRouterAddress,
+        approvalAmount
+    )
+
+    const params = {
+        tokenIn: immutables.token1,
+        tokenOut: immutables.token0,
+        fee: immutables.fee,
+        recipient: WALLET_ADDRESS,
+        deadline: Math.floor(Date.now() / 1000) + (60 * 10),
+        amountIn: amountIn,
+        amountOutMinimum: 0,
+        sqrtPriceLimitX96: 0,
+    }
+
+    const transaction = swapRouterContract.connect(connectedWallet).exactInputSingle(
+        params,
+        {
+            gasLimit: ethers.utils.hexlify(100000)
+        }
+    ).then(transaction => {
+        console.log(transaction)
+    })
 
 }
 
 
+main()
